@@ -61,7 +61,6 @@ export default function Page() {
     }
   }, []);
 
-  console.log(month, year);
   const [data, setData] = useState({
     employeeId: "",
     month: month,
@@ -85,7 +84,6 @@ export default function Page() {
     };
     fetchHistory();
   }, [data.employeeId, data.month, data.year]);
-  console.log(historyData);
   return (
     <div>
       <Header />

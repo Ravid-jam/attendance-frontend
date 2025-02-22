@@ -18,7 +18,6 @@ export default function Header() {
     const currentUser = JSON.parse(
       localStorage.getItem("employeeInfo") || "null"
     );
-    console.log(currentUser);
     setUserInfo(currentUser);
   }, []);
   return (
