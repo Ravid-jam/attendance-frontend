@@ -41,7 +41,11 @@ export default function Page() {
           "employeeInfo",
           JSON.stringify(response?.data?.data)
         );
-        router.push("/");
+        if (response?.data?.data?.role === "ADMIN") {
+          router.push("/admin/dashboard");
+        } else {
+          router.push("/");
+        }
         Toast("Logged in successfully", "Success");
       }
     } catch (err) {

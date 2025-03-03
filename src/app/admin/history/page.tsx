@@ -1,5 +1,5 @@
 "use client";
-import Header, { User } from "@/common/Header";
+import Header from "@/common/Header";
 import { Toast } from "@/common/utils";
 import { Field, Label, Select } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/16/solid";
@@ -7,37 +7,23 @@ import axios from "axios";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
 
-interface History {
-  attendanceRecords: HistoryItem[];
-  employeeId: string;
-  month: string;
+interface Employee {
+  _id: string;
+  name: string;
+  email: string;
+  role: string;
+  totalHours: string;
   totalDays: number;
-  totalHours: number;
-  year: string;
-}
-
-interface HistoryItem {
-  checkIn: string;
-  checkOut: string;
-  date: string;
-  employeeId: User;
-  workHours: number;
 }
 
 export default function Page() {
-  const [historyData, setHistoryData] = useState<History>({
-    employeeId: "",
-    month: "",
-    totalDays: 0,
-    totalHours: 0,
-    year: "",
-    attendanceRecords: [],
-  });
-
   const currentDate = new Date();
-  const month = currentDate.getMonth() + 1;
-  const year = currentDate.getFullYear();
-
+  const [employees, setEmployees] = useState([]);
+  const [data, setData] = useState({
+    employeeId: "",
+    month: currentDate.getMonth() + 1,
+    year: currentDate.getFullYear(),
+  });
   useEffect(() => {
     const currentUser = JSON.parse(
       localStorage.getItem("employeeInfo") || "null"
@@ -48,36 +34,29 @@ export default function Page() {
     }
   }, []);
 
-  const [data, setData] = useState({
-    employeeId: "",
-    month: month,
-    year: year,
-  });
-
   useEffect(() => {
     if (!data.employeeId) return;
-    const fetchHistory = async () => {
+    const employeeList = async () => {
       try {
-        const response = await axios(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/attendance/monthly/${data.employeeId}/${data.month}/${data.year}`
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/attendance/list/${data.month}/${data.year}`
         );
         if (response?.data?.status === true) {
-          setHistoryData(response.data.data);
-          Toast("Success in getting employee History", "Success");
+          Toast("Employees Fetched successfully", "Success");
+          setEmployees(response.data.data);
         }
       } catch (error) {
         console.error(error);
-        Toast("Failed in getting employee History", "error");
       }
     };
-    fetchHistory();
-  }, [data.employeeId, data.month, data.year]);
+    employeeList();
+  }, [data]);
 
   return (
     <div>
       <Header />
       <div className="pt-32 max-w-screen-2xl mx-auto w-full">
-        <div className="flex gap-5 justify-center pb-5">
+        <div className="flex gap-5 justify-center  pb-5">
           <Field>
             <Label className="text-sm/6 font-bold text-black">
               Select Month
@@ -162,7 +141,7 @@ export default function Page() {
             </div>
           </Field>
         </div>
-        {historyData?.attendanceRecords?.length > 0 ? (
+        {employees?.length > 0 ? (
           <table className="w-full text-sm text-left rtl:text-right text-gray-500">
             <thead className="text-xs text-white uppercase bg-[#2596be]">
               <tr>
@@ -170,43 +149,41 @@ export default function Page() {
                   Name
                 </th>
                 <th scope="col" className="px-6 py-3">
-                  Date
+                  email
                 </th>
                 <th scope="col" className="px-6 py-3">
-                  Check IN
+                  role
                 </th>
                 <th scope="col" className="px-6 py-3">
-                  Check OUT
+                  Total Work Hours
                 </th>
                 <th scope="col" className="px-6 py-3">
-                  Working Hours
+                  Total Work Day
                 </th>
               </tr>
             </thead>
             <tbody>
-              {historyData.attendanceRecords.map(
-                (product: HistoryItem, index: number) => (
-                  <tr
-                    key={index}
-                    className={`bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 ${
-                      index === historyData.attendanceRecords.length - 1
-                        ? ""
-                        : "border-b"
-                    }`}
+              {employees?.map((employee: Employee, index: number) => (
+                <tr
+                  key={index}
+                  className={`bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 ${
+                    index === employees.length - 1 ? "" : "border-b"
+                  }`}
+                >
+                  <th
+                    scope="row"
+                    className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                   >
-                    <th
-                      scope="row"
-                      className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
-                    >
-                      {product?.employeeId?.name}
-                    </th>
-                    <td className="px-6 py-4">{product.date}</td>
-                    <td className="px-6 py-4">{product.checkIn}</td>
-                    <td className="px-6 py-4">{product.checkOut}</td>
-                    <td className="px-6 py-4">{product.workHours}</td>
-                  </tr>
-                )
-              )}
+                    {employee?.name}
+                  </th>
+                  <td className="px-6 py-4">{employee.email}</td>
+                  <td className="px-6 py-4">{employee.role}</td>
+                  <td className="px-6 py-4">
+                    {employee?.totalHours || 0} hours
+                  </td>
+                  <td className="px-6 py-4">{employee?.totalDays || 0} days</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         ) : (
