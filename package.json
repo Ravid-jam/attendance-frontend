@@ -16,6 +16,7 @@
     "clsx": "^2.1.1",
     "js-cookie": "^3.0.5",
     "lucide": "^0.477.0",
+    "moment-timezone": "^0.5.47",
     "next": "15.1.7",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

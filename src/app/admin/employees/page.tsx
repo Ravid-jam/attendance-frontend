@@ -1,10 +1,10 @@
 "use client";
-import Header from "@/common/Header";
 import { Toast } from "@/common/utils";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { PencilIcon, TrashIcon } from "@heroicons/react/16/solid";
 import { yupResolver } from "@hookform/resolvers/yup";
 import axios from "axios";
+import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -20,7 +20,8 @@ interface Employee {
   password: string;
 }
 
-type register = {
+export type register = {
+  _id?: string;
   name: string;
   email: string;
   password: string;
@@ -37,7 +38,12 @@ const schema = yup.object().shape({
 });
 
 export default function Page() {
+  const token = Cookies.get("token");
   const router = useRouter();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 10;
+
   const [isOpen, setIsOpen] = useState(false);
 
   const [employees, setEmployees] = useState([]);
@@ -49,29 +55,56 @@ export default function Page() {
     reset,
   } = useForm<register>({
     resolver: yupResolver(schema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      role: "",
+    },
   });
 
-  const employeeList = async () => {
+  const [user, setCurrentUser] = useState({
+    employeeId: "",
+  });
+  useEffect(() => {
+    const currentUser = JSON.parse(
+      localStorage.getItem("employeeInfo") || "null"
+    );
+
+    if (currentUser?._id) {
+      setCurrentUser((prev) => ({ ...prev, employeeId: currentUser._id }));
+    }
+  }, []);
+
+  const employeeList = async (page = 1) => {
     try {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/listEmployees`
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/listEmployees?page=${page}&limit=${limit}`,
+        {
+          headers: { Authorization: token },
+        }
       );
       if (response?.data?.status === true) {
         Toast("Employees Fetched successfully", "Success");
         setEmployees(response.data.data);
+        setTotalPages(response.data.totalCount);
       }
     } catch (error) {
       console.error(error);
     }
   };
   useEffect(() => {
-    employeeList();
-  }, []);
+    if (!user.employeeId) return;
+    employeeList(currentPage);
+  }, [user, currentPage]);
 
   const deleteEmployee = async (employeeId: string) => {
     try {
       const response = await axios.delete(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/remove/${employeeId}`
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/remove/${employeeId}`,
+        {
+          headers: { Authorization: token },
+        }
       );
       if (response?.data?.status === true) {
         Toast("Employee deleted successfully", "Success");
@@ -89,7 +122,10 @@ export default function Page() {
       try {
         const response = await axios.put(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/update/${objEmployee._id}`,
-          data
+          data,
+          {
+            headers: { Authorization: token },
+          }
         );
         if (response.data.status === true) {
           setIsOpen(false);
@@ -105,7 +141,10 @@ export default function Page() {
       try {
         const response = await axios.post(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/register`,
-          data
+          data,
+          {
+            headers: { Authorization: token },
+          }
         );
         if (response.data.status === true) {
           setIsOpen(false);
@@ -132,9 +171,8 @@ export default function Page() {
   }, [isOpen]);
 
   return (
-    <div>
-      <Header />
-      <div className="pt-32 max-w-screen-2xl mx-auto w-full flex flex-col gap-5">
+    <>
+      <div className="pt-10 container w-full flex flex-col gap-5">
         <div className="flex justify-end">
           <button
             onClick={() => setIsOpen(!isOpen)}
@@ -144,67 +182,94 @@ export default function Page() {
           </button>
         </div>
         {employees?.length > 0 ? (
-          <table className="w-full text-sm text-left rtl:text-right text-gray-500">
-            <thead className="text-xs text-white uppercase bg-[#2596be]">
-              <tr>
-                <th scope="col" className="px-6 py-3">
-                  Name
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  email
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  role
-                </th>
+          <>
+            <div className="overflow-auto rounded-lg shadow-md min-h-[50%]">
+              <table className="w-full text-sm text-left rtl:text-right text-gray-500">
+                <thead className="text-xs text-white uppercase bg-[#2596be]">
+                  <tr>
+                    <th scope="col" className="px-6 py-3">
+                      Name
+                    </th>
+                    <th scope="col" className="px-6 py-3">
+                      email
+                    </th>
+                    <th scope="col" className="px-6 py-3">
+                      role
+                    </th>
 
-                <th scope="col" className="px-6 py-3">
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {employees?.map((employee: Employee, index: number) => (
-                <tr
-                  key={index}
-                  className={`bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 ${
-                    index === employees.length - 1 ? "" : "border-b"
-                  }`}
-                >
-                  <th
-                    scope="row"
-                    className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
-                  >
-                    {employee?.name}
-                  </th>
-                  <td className="px-6 py-4">{employee.email}</td>
-                  <td className="px-6 py-4">{employee.role}</td>
+                    <th scope="col" className="px-6 py-3">
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {employees?.map((employee: Employee, index: number) => (
+                    <tr
+                      key={index}
+                      className={`bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 ${
+                        index === employees.length - 1 ? "" : "border-b"
+                      }`}
+                    >
+                      <th
+                        scope="row"
+                        className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+                      >
+                        {employee?.name}
+                      </th>
+                      <td className="px-6 py-4">{employee.email}</td>
+                      <td className="px-6 py-4">{employee.role}</td>
 
-                  <td className="px-6 py-4 flex justify-start items-center gap-5 ">
-                    <PencilIcon
-                      className="h-6 w-6 cursor-pointer !text-[#2596be]"
-                      onClick={() => {
-                        setIsOpen(true);
-                        setObjEmployee(employee);
-                      }}
-                    />
-                    <TrashIcon
-                      className="h-6 w-6 cursor-pointer"
-                      color="red"
-                      onClick={() => {
-                        if (
-                          window.confirm(
-                            `Are you sure you want to delete ${employee.name}?`
-                          )
-                        ) {
-                          deleteEmployee(employee._id);
-                        }
-                      }}
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      <td className="px-6 py-4 flex justify-start items-center gap-5 ">
+                        <PencilIcon
+                          className="h-6 w-6 cursor-pointer !text-[#2596be]"
+                          onClick={() => {
+                            setIsOpen(true);
+                            setObjEmployee(employee);
+                          }}
+                        />
+                        <TrashIcon
+                          className="h-6 w-6 cursor-pointer"
+                          color="red"
+                          onClick={() => {
+                            if (
+                              window.confirm(
+                                `Are you sure you want to delete ${employee.name}?`
+                              )
+                            ) {
+                              deleteEmployee(employee._id);
+                            }
+                          }}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="flex justify-center gap-10 items-center mt-4">
+              <button
+                className="px-4 py-2 text-white bg-[#2596be] rounded disabled:opacity-50"
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </button>
+
+              <span className="text-gray-700">
+                Page {currentPage} of {totalPages}
+              </span>
+
+              <button
+                className="px-4 py-2 text-white bg-[#2596be] rounded disabled:opacity-50"
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </button>
+            </div>
+          </>
         ) : (
           <div className="text-center py-4 text-gray-500">
             No attendance records found.
@@ -215,7 +280,7 @@ export default function Page() {
         open={isOpen}
         onClose={() => setIsOpen(false)}
         transition
-        className="fixed inset-0 flex min-w-screen items-center justify-center bg-black/30 p-4 transition duration-300 ease-out data-[closed]:opacity-0"
+        className="fixed inset-0 flex min-w-screen items-center justify-center bg-black/80 p-4 transition duration-300 ease-out data-[closed]:opacity-0"
       >
         <DialogPanel className="w-[50%] space-y-4 bg-white p-12 rounded-md">
           <DialogTitle className="font-bold">ADD</DialogTitle>
@@ -339,6 +404,6 @@ export default function Page() {
           </form>
         </DialogPanel>
       </Dialog>
-    </div>
+    </>
   );
 }

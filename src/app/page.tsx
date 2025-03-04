@@ -4,8 +4,11 @@ import { Toast } from "@/common/utils";
 import axios from "axios";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import Cookies from "js-cookie";
 
 export default function Home() {
+  const token = Cookies.get("token");
+
   const [userInfo, setUserInfo] = useState<User>();
 
   const [isDisabled, setIsDisabled] = useState(false);
@@ -54,7 +57,10 @@ export default function Home() {
       try {
         const response = await axios.post(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/attendance/check-in`,
-          { employeeId: userInfo?._id }
+          { employeeId: userInfo?._id },
+          {
+            headers: { Authorization: token },
+          }
         );
         if (response.data.status === true) {
           Toast("Checked in successfully!", "Success");
@@ -74,7 +80,10 @@ export default function Home() {
       try {
         const response = await axios.post(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/attendance/check-out`,
-          { employeeId: userInfo?._id }
+          { employeeId: userInfo?._id },
+          {
+            headers: { Authorization: token },
+          }
         );
         if (response.data.status === true) {
           Toast("Checked out successfully!", "Success");

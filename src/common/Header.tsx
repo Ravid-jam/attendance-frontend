@@ -16,11 +16,11 @@ export interface User {
 const navLinks = [
   { name: "Home", path: "/" },
   { name: "History", path: "/history" },
-  { name: "Lives", path: "/lives" },
+  { name: "Apply For Leave", path: "/leaves" },
 ];
 const navLinksForAdmin = [
   { name: "History", path: "/admin/history" },
-  { name: "Lives", path: "/lives" },
+  { name: "Leaves", path: "/admin/leaves" },
   { name: "Employees", path: "/admin/employees" },
   { name: "Settings", path: "/settings" },
 ];
@@ -35,13 +35,16 @@ export default function Header() {
     setUserInfo(currentUser);
   }, []);
   return (
-    <header className="fixed top-0 w-full text-white bg-[#2596be] h-20">
-      <div className="max-w-[1400px] mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center">
-        <a className="flex title-font font-medium items-center bg-white rounded-[14px] text-gray-900 mb-4 md:mb-0">
-          <img src="/assets/logo.png" className="h-12 " />
-        </a>
+    <header className="sticky top-0 w-full text-gray-600 shadow-md border-b h-20">
+      <div className="container flex flex-wrap py-4 flex-col md:flex-row justify-between items-center">
+        <div className="h-12">
+          <img
+            src="/assets/logo.png"
+            className="h-full w-full object-contain"
+          />
+        </div>
         {userInfo?.role === "ADMIN" ? (
-          <nav className="md:ml-auto flex flex-wrap items-center justify-center">
+          <nav className=" flex flex-wrap items-center justify-center">
             {navLinksForAdmin.map(({ name, path }) => (
               <Link
                 key={path}
@@ -53,7 +56,7 @@ export default function Header() {
             ))}
           </nav>
         ) : (
-          <nav className="md:ml-auto flex flex-wrap items-center justify-center">
+          <nav className="flex flex-wrap items-center gap-5 justify-center">
             {navLinks.map(({ name, path }) => (
               <Link
                 key={path}

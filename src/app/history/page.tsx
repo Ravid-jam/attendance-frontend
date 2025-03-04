@@ -6,6 +6,7 @@ import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import axios from "axios";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
+import Cookies from "js-cookie";
 
 interface History {
   attendanceRecords: HistoryItem[];
@@ -25,6 +26,11 @@ interface HistoryItem {
 }
 
 export default function Page() {
+  const token = Cookies.get("token");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 10;
+
   const [historyData, setHistoryData] = useState<History>({
     employeeId: "",
     month: "",
@@ -56,13 +62,17 @@ export default function Page() {
 
   useEffect(() => {
     if (!data.employeeId) return;
-    const fetchHistory = async () => {
+    const fetchHistory = async (page = 1) => {
       try {
         const response = await axios(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/attendance/monthly/${data.employeeId}/${data.month}/${data.year}`
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/attendance/monthly/${data.employeeId}/${data.month}/${data.year}?page=${page}&limit=${limit}`,
+          {
+            headers: { Authorization: token },
+          }
         );
         if (response?.data?.status === true) {
           setHistoryData(response.data.data);
+          setTotalPages(response.data.totalCount);
           Toast("Success in getting employee History", "Success");
         }
       } catch (error) {
@@ -70,13 +80,13 @@ export default function Page() {
         Toast("Failed in getting employee History", "error");
       }
     };
-    fetchHistory();
-  }, [data.employeeId, data.month, data.year]);
+    fetchHistory(currentPage);
+  }, [data.employeeId, data.month, data.year, currentPage]);
 
   return (
     <div>
       <Header />
-      <div className="pt-32 max-w-screen-2xl mx-auto w-full">
+      <div className="pt-10 container w-full">
         <div className="flex gap-5 justify-center pb-5">
           <Field>
             <Label className="text-sm/6 font-bold text-black">
@@ -163,52 +173,79 @@ export default function Page() {
           </Field>
         </div>
         {historyData?.attendanceRecords?.length > 0 ? (
-          <table className="w-full text-sm text-left rtl:text-right text-gray-500">
-            <thead className="text-xs text-white uppercase bg-[#2596be]">
-              <tr>
-                <th scope="col" className="px-6 py-3">
-                  Name
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  Date
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  Check IN
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  Check OUT
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  Working Hours
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {historyData.attendanceRecords.map(
-                (product: HistoryItem, index: number) => (
-                  <tr
-                    key={index}
-                    className={`bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 ${
-                      index === historyData.attendanceRecords.length - 1
-                        ? ""
-                        : "border-b"
-                    }`}
-                  >
-                    <th
-                      scope="row"
-                      className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
-                    >
-                      {product?.employeeId?.name}
+          <>
+            <div className="overflow-auto rounded-lg shadow-md min-h-[50%]">
+              <table className="w-full text-sm text-left rtl:text-right text-gray-500">
+                <thead className="text-xs text-white uppercase bg-[#2596be]">
+                  <tr>
+                    <th scope="col" className="px-6 py-3">
+                      Name
                     </th>
-                    <td className="px-6 py-4">{product.date}</td>
-                    <td className="px-6 py-4">{product.checkIn}</td>
-                    <td className="px-6 py-4">{product.checkOut}</td>
-                    <td className="px-6 py-4">{product.workHours}</td>
+                    <th scope="col" className="px-6 py-3">
+                      Date
+                    </th>
+                    <th scope="col" className="px-6 py-3">
+                      Check IN
+                    </th>
+                    <th scope="col" className="px-6 py-3">
+                      Check OUT
+                    </th>
+                    <th scope="col" className="px-6 py-3">
+                      Working Hours
+                    </th>
                   </tr>
-                )
-              )}
-            </tbody>
-          </table>
+                </thead>
+                <tbody>
+                  {historyData.attendanceRecords.map(
+                    (product: HistoryItem, index: number) => (
+                      <tr
+                        key={index}
+                        className={`bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 ${
+                          index === historyData.attendanceRecords.length - 1
+                            ? ""
+                            : "border-b"
+                        }`}
+                      >
+                        <th
+                          scope="row"
+                          className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+                        >
+                          {product?.employeeId?.name}
+                        </th>
+                        <td className="px-6 py-4">{product.date}</td>
+                        <td className="px-6 py-4">{product.checkIn}</td>
+                        <td className="px-6 py-4">{product.checkOut}</td>
+                        <td className="px-6 py-4">{product.workHours}</td>
+                      </tr>
+                    )
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <div className="flex justify-center gap-10 items-center mt-4">
+              <button
+                className="px-4 py-2 text-white bg-[#2596be] rounded disabled:opacity-50"
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </button>
+
+              <span className="text-gray-700">
+                Page {currentPage} of {totalPages}
+              </span>
+
+              <button
+                className="px-4 py-2 text-white bg-[#2596be] rounded disabled:opacity-50"
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </button>
+            </div>
+          </>
         ) : (
           <div className="text-center py-4 text-gray-500">
             No attendance records found.
