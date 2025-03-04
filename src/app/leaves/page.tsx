@@ -37,7 +37,7 @@ type formData = {
   endDate: Date;
   reason: string;
 };
-export const leaveSchema = yup.object().shape({
+const leaveSchema = yup.object().shape({
   leaveType: yup
     .string()
     .oneOf(
