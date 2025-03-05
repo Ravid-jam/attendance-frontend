@@ -214,8 +214,12 @@ export default function Page() {
                         </th>
                         <td className="px-6 py-4">{product.date}</td>
                         <td className="px-6 py-4">{product.checkIn}</td>
-                        <td className="px-6 py-4">{product.checkOut}</td>
-                        <td className="px-6 py-4">{product.workHours}</td>
+                        <td className="px-6 py-4">
+                          {product.checkOut ? product.checkOut : "Not checkOut"}
+                        </td>
+                        <td className="px-6 py-4">
+                          {Math.round(product.workHours)}
+                        </td>
                       </tr>
                     )
                   )}

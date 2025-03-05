@@ -66,8 +66,8 @@ export default function Page() {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const limit = 10;
   const router = useRouter();
+  const limit = 10;
 
   useEffect(() => {
     const currentUser = JSON.parse(
@@ -179,14 +179,16 @@ export default function Page() {
       }
     }
   };
-
+  console.log(objLeaves);
   return (
     <div>
       <Header />
       <div className="pt-10 container w-full flex flex-col gap-5">
         <div className="flex justify-end">
           <button
-            onClick={() => setIsOpen(!isOpen)}
+            onClick={() => {
+              setIsOpen(!isOpen);
+            }}
             className="text-white bg-gradient-to-br  from-[#2596be] to-[#5c85d6] hover:bg-gradient-to-bl font-medium rounded-lg text-base px-4 py-2.5 text-center me-2"
           >
             New Leave
