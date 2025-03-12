@@ -214,7 +214,7 @@ export default function Page() {
                     ?.filter((data: any) => data.role === "STAFF")
                     .map((user: any, index: number) => (
                       <option value={user._id} key={index}>
-                        {user.firstName}
+                        {user.firstName}&nbsp;{user.lastName}
                       </option>
                     ))}
               </Select>
