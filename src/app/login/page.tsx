@@ -57,46 +57,50 @@ export default function Page() {
   };
 
   return (
-    <div className="flex min-h-screen flex-1 flex-col justify-center px-6 py-12 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <div className="h-16 w-auto ">
-          <img
-            alt="Your Company"
-            src="/assets/logo.png"
-            className="h-full w-full object-contain"
-          />
-        </div>
-        <h2 className="mt-10 text-center text-2xl font-bold tracking-tight text-gray-900">
-          Sign in to your account
-        </h2>
-      </div>
-
-      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <InputField
-            id="email"
-            type="email"
-            label="Email"
-            {...register("email")}
-            error={errors.email}
-          />
-
-          <InputField
-            id="password"
-            type="password"
-            label="Password"
-            {...register("password")}
-            error={errors.password}
-          />
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={isSubmitting}
-            isLoading={isSubmitting}
+    <div className="bg-gray-100">
+      <div className="flex min-h-screen flex-1 flex-col justify-center max-w-xl mx-auto px-6  py-12 lg:px-8">
+        <div className="p-7 border rounded-xl bg-white shadow-lg">
+          <div className="flex flex-col gap-5">
+            <div className="h-16 w-auto ">
+              <img
+                alt="Your Company"
+                src="/assets/logo.png"
+                className="h-full w-full object-contain"
+              />
+            </div>
+            <h2 className="text-center text-2xl font-bold tracking-tight text-gray-900">
+              Keep Only Sign In
+            </h2>
+          </div>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex flex-col w-full space-y-6"
           >
-            {isSubmitting ? "Loading..." : "Sign In"}
-          </Button>
-        </form>
+            <InputField
+              id="email"
+              type="email"
+              label="Email"
+              {...register("email")}
+              error={errors.email}
+            />
+
+            <InputField
+              id="password"
+              type="password"
+              label="Password"
+              {...register("password")}
+              error={errors.password}
+            />
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={isSubmitting}
+              isLoading={isSubmitting}
+            >
+              {isSubmitting ? "Loading..." : "Sign In"}
+            </Button>
+          </form>
+        </div>
       </div>
     </div>
   );
