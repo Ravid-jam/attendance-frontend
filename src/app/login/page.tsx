@@ -7,6 +7,8 @@ import { Toast } from "@/common/utils";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
+import Button from "@/common/Button";
+import InputField from "@/common/InputField";
 type Login = {
   email: string;
   password: string;
@@ -24,7 +26,7 @@ export default function Page() {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<Login>({
     resolver: yupResolver(schema),
   });
@@ -44,7 +46,7 @@ export default function Page() {
         if (response?.data?.data?.role === "ADMIN") {
           router.push("/admin/dashboard");
         } else {
-          router.push("/");
+          router.push("/user/dashboard");
         }
         Toast("Logged in successfully", "Success");
       }
@@ -71,68 +73,29 @@ export default function Page() {
 
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-900"
-            >
-              Email address
-            </label>
-            <div className="mt-2">
-              <input
-                id="email"
-                type="email"
-                {...register("email")}
-                className={`block w-full rounded-md bg-white border px-3 py-2 text-base text-gray-900 placeholder:text-gray-400 sm:text-sm ${
-                  errors.email
-                    ? "border-red-500 focus:outline-2 focus:outline-red-500"
-                    : "border-gray-300 focus:outline-2 focus:outline-[#2596be]"
-                }`}
-              />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-500">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
-          </div>
+          <InputField
+            id="email"
+            type="email"
+            label="Email"
+            {...register("email")}
+            error={errors.email}
+          />
 
-          <div>
-            <div className="flex items-center justify-between">
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-900"
-              >
-                Password
-              </label>
-            </div>
-            <div className="mt-2">
-              <input
-                id="password"
-                type="password"
-                {...register("password")}
-                className={`block w-full rounded-md bg-white border px-3 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:outline-2 focus:outline-[#2596be] sm:text-sm ${
-                  errors.password
-                    ? "border-red-500 focus:outline-2 focus:outline-red-500"
-                    : "border-gray-300 focus:outline-2 focus:outline-[#2596be]"
-                }`}
-              />
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-500">
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <button
-              type="submit"
-              className="flex w-full justify-center rounded-md bg-[#2596be] px-3 py-1.5 text-sm font-semibold text-white shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            >
-              Sign in
-            </button>
-          </div>
+          <InputField
+            id="password"
+            type="password"
+            label="Password"
+            {...register("password")}
+            error={errors.password}
+          />
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={isSubmitting}
+            isLoading={isSubmitting}
+          >
+            {isSubmitting ? "Loading..." : "Sign In"}
+          </Button>
         </form>
       </div>
     </div>

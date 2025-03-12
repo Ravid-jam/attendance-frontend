@@ -22,5 +22,5 @@ body {
 
 
 .container {
- @apply max-w-[1400px] mx-auto
+ @apply max-w-[1536px] mx-auto px-5 xl:px-0
 }

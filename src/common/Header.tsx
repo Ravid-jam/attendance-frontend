@@ -1,67 +1,88 @@
 "use client";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import clsx from "clsx";
 export interface User {
   _id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   password: string;
+  profile_Image: any;
   role: string;
 }
 
 const navLinks = [
-  { name: "Home", path: "/" },
-  { name: "History", path: "/history" },
-  { name: "Apply For Leave", path: "/leaves" },
+  { name: "Home", path: "/user/dashboard" },
+  { name: "Apply For Leave", path: "/user/leaves" },
 ];
 const navLinksForAdmin = [
-  { name: "History", path: "/admin/history" },
+  { name: "Dashboard", path: "/admin/dashboard" },
   { name: "Leaves", path: "/admin/leaves" },
   { name: "Employees", path: "/admin/employees" },
-  { name: "Settings", path: "/settings" },
 ];
 
 export default function Header() {
   const [userInfo, setUserInfo] = useState<User>();
   const router = useRouter();
+  const pathName = usePathname();
+
   useEffect(() => {
     const currentUser = JSON.parse(
       localStorage.getItem("employeeInfo") || "null"
     );
     setUserInfo(currentUser);
   }, []);
+
   return (
-    <header className="sticky top-0 w-full text-gray-600 shadow-md border-b h-20">
+    <header className="sticky top-0 z-50 text-gray-600 shadow-md border-b h-20 w-full bg-white">
       <div className="container flex flex-wrap py-4 flex-col md:flex-row justify-between items-center">
         <div className="h-12">
           <img
             src="/assets/logo.png"
-            className="h-full w-full object-contain"
+            className="h-full w-full object-contain cursor-pointer"
+            onClick={() => {
+              if (userInfo?.role == "ADMIN") {
+                router.push("/admin/dashboard");
+              } else {
+                router.push("/user/dashboard");
+              }
+            }}
           />
         </div>
         {userInfo?.role === "ADMIN" ? (
-          <nav className=" flex flex-wrap items-center justify-center">
+          <nav className="flex gap-7 flex-wrap items-center justify-center">
             {navLinksForAdmin.map(({ name, path }) => (
               <Link
                 key={path}
                 href={path}
-                className="mr-5 text-base font-medium cursor-pointer"
+                className={clsx(
+                  "text-lg  cursor-pointer",
+                  path === pathName
+                    ? "text-primary font-medium"
+                    : "text-gray-600 font-medium"
+                )}
               >
                 {name}
               </Link>
             ))}
           </nav>
         ) : (
-          <nav className="flex flex-wrap items-center gap-5 justify-center">
+          <nav className="flex gap-7 flex-wrap items-center justify-center">
             {navLinks.map(({ name, path }) => (
               <Link
                 key={path}
                 href={path}
-                className="mr-5 text-base font-medium cursor-pointer"
+                className={clsx(
+                  "text-lg cursor-pointer",
+                  path === pathName
+                    ? "text-primary font-medium"
+                    : "text-gray-600 font-medium"
+                )}
               >
                 {name}
               </Link>
@@ -73,7 +94,11 @@ export default function Header() {
             <MenuButton className="flex rounded-full bg-gray-800 text-base">
               <img
                 alt=""
-                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                src={
+                  userInfo?.profile_Image?.url
+                    ? userInfo?.profile_Image?.url
+                    : "/assets/profile.png"
+                }
                 className="size-10 rounded-full"
               />
             </MenuButton>
@@ -85,7 +110,8 @@ export default function Header() {
             <MenuItem>
               <a className="block disabled border-b px-4 py-3 text-xs text-black font-normal data-focus:bg-gray-100 data-focus:outline-hidden">
                 <span className="text-lg font-medium text-black">
-                  {userInfo?.name}
+                  {userInfo?.firstName}&nbsp;
+                  {userInfo?.lastName}
                 </span>
                 <br />
                 role:&nbsp;
@@ -94,10 +120,12 @@ export default function Header() {
             </MenuItem>
             <MenuItem>
               <a
-                href="#"
+                onClick={() => {
+                  router.push("/user/profile");
+                }}
                 className="block px-4 py-2 text-sm text-gray-700 data-focus:bg-gray-100 data-focus:outline-hidden cursor-pointer"
               >
-                Settings
+                Profile
               </a>
             </MenuItem>
             <MenuItem>

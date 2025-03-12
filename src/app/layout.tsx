@@ -1,10 +1,12 @@
 "use client";
+import Loader from "@/common/Loader";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import { useEffect, useState } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useEffect, useState } from "react";
-import Loader from "@/common/Loader";
+import "./globals.css";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -15,6 +17,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const queryClient = new QueryClient();
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -23,7 +27,7 @@ export default function RootLayout({
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    setTimeout(() => setLoading(false), 1000);
+    setTimeout(() => setLoading(false), 500);
   }, []);
   return (
     <html lang="en">
@@ -31,7 +35,13 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ToastContainer autoClose={2000} />
-        {loading ? <Loader /> : children}
+        {loading ? (
+          <Loader />
+        ) : (
+          <QueryClientProvider client={queryClient}>
+            {children}
+          </QueryClientProvider>
+        )}
       </body>
     </html>
   );
