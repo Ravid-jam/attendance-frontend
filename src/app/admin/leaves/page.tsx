@@ -1,5 +1,7 @@
 "use client";
+import DataTable from "@/common/DataTable";
 import Loader from "@/common/Loader";
+import Pagination from "@/common/Pagination";
 import { Toast } from "@/common/utils";
 import {
   getEmployee,
@@ -297,62 +299,7 @@ export default function Page() {
           </div>
         </div>
       </div>
-      <div className="w-full overflow-x-auto border shadow border-gray-200 rounded-2xl">
-        <table className="w-full">
-          <thead>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id} className="bg-primary">
-                {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    className="border border-gray-300 text-white p-3"
-                  >
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody>
-            {table?.getRowModel()?.rows.map((row) => (
-              <tr key={row.id} className="border-b border-black text-center">
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="border border-gray-300 p-2">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div className="flex justify-between  mt-4">
-        <div className="flex-1 text-center w-full">
-          <span>
-            Page {table.getState().pagination.pageIndex + 1} of&nbsp;
-            {table.getPageCount()}
-          </span>
-        </div>
-        <div className="flex gap-3">
-          <button
-            className="px-3 py-1 border rounded bg-primary text-white disabled:opacity-50"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            Prev
-          </button>
-          <button
-            className="px-3 py-1 border rounded bg-primary text-white disabled:opacity-50"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Next
-          </button>
-        </div>
-      </div>
+      <DataTable table={table} />
     </div>
   );
 }

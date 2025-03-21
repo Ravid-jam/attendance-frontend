@@ -1,7 +1,10 @@
 "use client";
 import Button from "@/common/Button";
+import DataTable from "@/common/DataTable";
+import Heading from "@/common/Heading";
 import InputField from "@/common/InputField";
 import Loader from "@/common/Loader";
+import Pagination from "@/common/Pagination";
 import TextareaField from "@/common/TextareaField";
 import { formatDate, Toast } from "@/common/utils";
 import {
@@ -163,19 +166,43 @@ export default function Page() {
       cell: (info: any) => {
         return (
           <div className="flex justify-center gap-3">
-            <PencilIcon
-              className="h-6 w-6 cursor-pointer !text-[#2596be]"
-              onClick={() => {
-                setObjLives(info?.row?.original);
-              }}
-            />
-            <TrashIcon
-              className="h-6 w-6 cursor-pointer"
-              color="red"
-              onClick={() => {
-                handleDeleteLeave(info?.row?.original?._id);
-              }}
-            />
+            <button
+              disabled={
+                info?.row?.original.status === "Approved" ||
+                info?.row?.original.status === "Denied"
+                  ? true
+                  : false
+              }
+            >
+              <PencilIcon
+                className={clsx(
+                  "h-6 w-6 cursor-pointer !text-[#2596be]",
+                  info.row.original.status === "Approved" ||
+                    info?.row?.original.status === "Denied"
+                    ? "opacity-50"
+                    : "opacity-100"
+                )}
+                onClick={() => {
+                  setObjLives(info?.row?.original);
+                }}
+              />
+            </button>
+            <button
+              disabled={info?.row?.original.status !== "Pending" ? true : false}
+            >
+              <TrashIcon
+                className={clsx(
+                  "h-6 w-6 cursor-pointer",
+                  info?.row?.original.status !== "Pending"
+                    ? "opacity-50"
+                    : "opacity-100"
+                )}
+                color="red"
+                onClick={() => {
+                  handleDeleteLeave(info?.row?.original?._id);
+                }}
+              />
+            </button>
           </div>
         );
       },
@@ -300,70 +327,11 @@ export default function Page() {
             <span className="text-base font-bold"> {user.email}</span>
           </div>
         </div>
-        <div className="w-full overflow-x-auto border shadow border-gray-200 rounded-2xl">
-          <table className="w-full">
-            <thead>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id} className="bg-primary">
-                  {headerGroup.headers.map((header) => (
-                    <th
-                      key={header.id}
-                      className="border border-gray-300 text-white p-3"
-                    >
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                    </th>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody>
-              {table?.getRowModel()?.rows.map((row) => (
-                <tr key={row.id} className="border-b border-black text-center">
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="border border-gray-300 p-2">
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className="flex justify-between">
-          <div className="flex-1 text-center w-full">
-            <span>
-              Page {table.getState().pagination.pageIndex + 1} of&nbsp;
-              {table.getPageCount()}
-            </span>
-          </div>
-          <div className="flex gap-3">
-            <button
-              className="px-3 py-1 border rounded bg-primary text-white disabled:opacity-50"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              Prev
-            </button>
-            <button
-              className="px-3 py-1 border rounded bg-primary text-white disabled:opacity-50"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              Next
-            </button>
-          </div>
-        </div>
+        <DataTable table={table} />
       </div>
       <div className="w-full lg:w-[30%] flex flex-col gap-5">
-        <h1 className="font-semibold text-2xl text-primary">
-          Employee Leave Summary: Taken & Remaining
-        </h1>
+        <Heading title="Employee Leave Summary: Taken & Remaining" />
+
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="flex flex-col gap-5">
             <InputField
